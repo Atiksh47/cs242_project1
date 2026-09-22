@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python main.py)",
+      "Bash(grep -n \"^PART FIVE\\\\|My Sea Adventure\\\\|^TREASURE ISLAND$\" books/treasure_island.txt)",
+      "Bash(python3 -)",
+      "Bash(py -3 --version)",
+      "Bash(python.exe --version)",
+      "Bash(python -)",
+      "Bash(grep -n \"^Letter 1$\" books/frankenstein.txt)",
+      "Bash(grep -n \"^I\\\\.$\" books/communist_manifesto.txt)",
+      "Bash(python -c ' *)"
+    ]
+  }
+}

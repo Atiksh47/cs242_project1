@@ -49,11 +49,35 @@ def strip_gutenberg_boilerplate(raw_text: str) -> str:
     return body.strip()
 
 
+def remove_table_of_contents(text: str, narrative_start: str | None = None) -> str:
+    """Cut everything from the start of the file up to (and not including)
+    narrative_start, which should be a short, distinctive substring that
+    appears at the point where the real narrative begins (e.g. the opening
+    words of chapter 1). This removes the title page and table of contents,
+    which otherwise get tokenized as if they were real content - a TOC full
+    of chapter titles/character names inflates their raw counts and skews
+    TF-IDF.
+
+    These anchors were found manually per book because Gutenberg mirrors are
+    not consistent enough about TOC formatting for one regex to catch all of
+    them reliably (see clean_tokenize testing during development). If no
+    anchor is given, the text is returned unchanged.
+    """
+    if narrative_start is None:
+        return text
+    idx = text.find(narrative_start)
+    if idx == -1:
+        print(f"  [warn] narrative_start anchor {narrative_start!r} not found; "
+              "table of contents not stripped for this book.")
+        return text
+    return text[idx:]
+
+
 def remove_structural_noise(text: str) -> str:
-    """Best-effort removal of tables of contents, chapter dividers made of
-    punctuation (e.g. rows of underscores/asterisks used as scene breaks),
-    and excessive whitespace. This is intentionally simple - inspect your
-    output and extend these patterns if a specific book needs more cleanup.
+    """Best-effort removal of chapter dividers made of punctuation (e.g. rows
+    of underscores/asterisks used as scene breaks) and excessive whitespace.
+    This is intentionally simple - inspect your output and extend these
+    patterns if a specific book needs more cleanup.
     """
     # Collapse rows of repeated symbols used as dividers (----, ****, ====)
     text = re.sub(r"[-=*_]{4,}", " ", text)
@@ -68,18 +92,25 @@ def tokenize(text: str) -> list[str]:
     Uses \\b\\w+\\b matching rather than str.split() so contractions and
     hyphenated words are handled predictably; digits are excluded from
     tokens (change the pattern if you want to keep numbers as terms).
+
+    Gutenberg texts use the curly/smart apostrophe (U+2019, '’') in
+    contractions rather than a straight quote, so it's normalized to a
+    straight apostrophe before matching - otherwise "I'll" is split into
+    "i" and "ll" as two separate tokens instead of staying joined.
     """
-    text = text.lower()
+    text = text.lower().replace("’", "'")
     tokens = re.findall(r"[a-z]+(?:'[a-z]+)?", text)
     return tokens
 
 
-def load_and_tokenize_book(filepath: str) -> list[str]:
-    """Full pipeline for one file: read -> strip boilerplate -> clean -> tokenize."""
+def load_and_tokenize_book(filepath: str, narrative_start: str | None = None) -> list[str]:
+    """Full pipeline for one file: read -> strip boilerplate -> strip title
+    page/TOC -> clean -> tokenize."""
     with open(filepath, "r", encoding="utf-8", errors="replace") as f:
         raw = f.read()
 
     body = strip_gutenberg_boilerplate(raw)
+    body = remove_table_of_contents(body, narrative_start)
     body = remove_structural_noise(body)
     tokens = tokenize(body)
     return tokens

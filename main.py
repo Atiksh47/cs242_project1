@@ -33,13 +33,19 @@ from tfidf import (
 
 # Map a short label -> filename in books/. Edit these filenames to match
 # whatever you actually name the downloaded files.
+#
+# narrative_start is a short, unique substring marking the first sentence of
+# the actual book, used to cut off the title page and table of contents that
+# these Gutenberg mirrors include (see clean_tokenize.remove_table_of_contents).
+# Found manually by inspecting each file - if you swap in a different edition
+# of a book, re-check that the anchor still appears (and only once).
 BOOKS = {
-    "frankenstein":      ("gothic", "books/frankenstein.txt"),
-    "dracula":           ("gothic", "books/dracula.txt"),
-    "treasure_island":   ("adventure", "books/treasure_island.txt"),
-    "monte_cristo":      ("adventure", "books/monte_cristo.txt"),
-    "republic":          ("philosophy", "books/republic.txt"),
-    "communist_manifesto": ("philosophy", "books/communist_manifesto.txt"),
+    "frankenstein":      ("gothic", "books/frankenstein.txt", "St. Petersburgh, Dec. 11th"),
+    "dracula":           ("gothic", "books/dracula.txt", "How these papers have been placed in sequence"),
+    "treasure_island":   ("adventure", "books/treasure_island.txt", "Squire Trelawney, Dr. Livesey, and the rest"),
+    "monte_cristo":      ("adventure", "books/monte_cristo.txt", "On the 24th of February, 1815, the look-out"),
+    "republic":          ("philosophy", "books/republic.txt", "The Republic of Plato is the longest"),
+    "communist_manifesto": ("philosophy", "books/communist_manifesto.txt", "A spectre is haunting Europe"),
 }
 
 OUTPUT_DIR = "output"
@@ -50,12 +56,12 @@ def main():
 
     # --- 1 & 2: parse, tokenize, remove stopwords ---
     doc_tokens = {}
-    for label, (genre, path) in BOOKS.items():
+    for label, (genre, path, narrative_start) in BOOKS.items():
         if not os.path.exists(path):
             print(f"[skip] {path} not found - download it and place it there.")
             continue
         print(f"Processing {label}...")
-        tokens = load_and_tokenize_book(path)
+        tokens = load_and_tokenize_book(path, narrative_start)
         tokens = remove_stopwords(tokens)
         doc_tokens[label] = tokens
         print(f"  -> {len(tokens)} tokens after stopword removal")
