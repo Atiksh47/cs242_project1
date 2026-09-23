@@ -60,6 +60,12 @@ def compute_tf(count_matrix: pd.DataFrame) -> pd.DataFrame:
 def compute_idf(count_matrix: pd.DataFrame, log_base: float = 10) -> pd.Series:
     """idf(t, D) = log( N_D / (1 + n_t) )
     where n_t = number of documents containing term t.
+
+    Note: with a small corpus (here N_D = 6), any term that happens to
+    appear in every document (n_t = N_D) gets a slightly NEGATIVE idf,
+    since N_D / (1 + N_D) < 1. Worth a mention in the report as a
+    limitation of a small document count, but not something the pipeline
+    needs to correct for.
     """
     n_docs = count_matrix.shape[1]
     doc_freq = (count_matrix > 0).sum(axis=1)  # n_t per term

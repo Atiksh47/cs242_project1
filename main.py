@@ -1,9 +1,7 @@
 """
 main.py
 
-Entry point. Put your six downloaded Gutenberg .txt files in books/ with
-the filenames below (or edit BOOKS to match what you actually download),
-then run:
+Entry point.
 
     python main.py
 
@@ -31,14 +29,7 @@ from tfidf import (
     cosine_similarity_matrix,
 )
 
-# Map a short label -> filename in books/. Edit these filenames to match
-# whatever you actually name the downloaded files.
-#
-# narrative_start is a short, unique substring marking the first sentence of
-# the actual book, used to cut off the title page and table of contents that
-# these Gutenberg mirrors include (see clean_tokenize.remove_table_of_contents).
-# Found manually by inspecting each file - if you swap in a different edition
-# of a book, re-check that the anchor still appears (and only once).
+
 BOOKS = {
     "frankenstein":      ("gothic", "books/frankenstein.txt", "St. Petersburgh, Dec. 11th"),
     "dracula":           ("gothic", "books/dracula.txt", "How these papers have been placed in sequence"),
